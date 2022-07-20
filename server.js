@@ -10,7 +10,7 @@ const data = require('./data.json');
 
 // singleton ( there can only be one!! )
 const app = express(); // returns an object, with methods designed to handle Requests.
-const PORT = 3000; //use 3000 -> process.env.PORT
+const PORT = process.env.PORT; //use 3000 -> process.env.PORT
 
 // enable cross origin resource sharing between localhost:3001 and any other url that may make a request.
 app.use(cors());
