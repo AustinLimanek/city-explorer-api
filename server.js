@@ -5,7 +5,7 @@ const express = require('express');
 // CORS - cross origin resource sharing
 // origin - the beginning of your url
 const cors = require('cors');
-const data = require('./data.json');
+const weather = require('./data/weather.json'); //was ./data.json also changed weather from data
 
 
 // singleton ( there can only be one!! )
@@ -30,21 +30,38 @@ app.get('/params', (request, response) => {
   response.send('Thanks for the parameters');
 });
 
-app.get('/pokemon', (request, response) => {
+app.get('/', (request, response) => {
 
-  let pokemonName = request.query.pokemon;
+  let cityName = request.query.city;
 
-  if (pokemonName) {
-    if (data.pokemon.includes(pokemonName)) {
-      response.send(data.pokemon);
+  if (cityName) {
+    if (weather[0].city_name.toLowerCase() === cityName) {
+      response.send(weather[0]);
     } else {
       response.status(404).send('Pokemon not found');
     }
-  } else {
+  }
+  else {
     response.status(400).send('Please give me a pokemon name!');
   }
 
 });
+
+// app.get('/pokemon', (request, response) => {
+
+//   let pokemonName = request.query.pokemon;
+
+//   if (pokemonName) {
+//     if (data.pokemon.includes(pokemonName)) {
+//       response.send(data.pokemon);
+//     } else {
+//       response.status(404).send('Pokemon not found');
+//     }
+//   } else {
+//     response.status(400).send('Please give me a pokemon name!');
+//   }
+
+// });
 
 app.get('/error', (request, response) => {
 
