@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 require('dotenv').config();
 const express = require('express');
@@ -32,17 +32,19 @@ app.get('/params', (request, response) => {
 
 app.get('/', (request, response) => {
 
+  let cities = weather.map(element => element.city_name.toLowerCase());
   let cityName = request.query.city;
 
   if (cityName) {
-    if (weather[0].city_name.toLowerCase() === cityName) {
-      response.send(weather[0]);
+    if (cities.includes(cityName)) {
+      let i = cities.indexOf(cityName);
+      response.send(weather[i]);
     } else {
-      response.status(404).send('Pokemon not found');
+      response.status(404).send('City not found');
     }
   }
   else {
-    response.status(400).send('Please give me a pokemon name!');
+    response.status(400).send('Please give me a city name!');
   }
 
 });
