@@ -31,14 +31,19 @@ app.get('/params', (request, response) => {
 });
 
 app.get('/', (request, response) => {
-
+  //You could also use the .find method to do similar logic
   let cities = weather.map(element => element.city_name.toLowerCase());
   let cityName = request.query.city;
 
   if (cityName) {
     if (cities.includes(cityName)) {
       let i = cities.indexOf(cityName);
-      response.send(weather[i]);
+      let Forecast = [];
+      weather[i].data.map(element => Forecast.push({
+        "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
+        "date": element.datetime
+      }));
+      response.send(Forecast);
     } else {
       response.status(404).send('City not found');
     }
