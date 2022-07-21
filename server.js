@@ -5,7 +5,8 @@ const express = require('express');
 // CORS - cross origin resource sharing
 // origin - the beginning of your url
 const cors = require('cors');
-const weather = require('./data/weather.json'); //was ./data.json also changed weather from data
+//const weather = require('./data/weather.json'); //was ./data.json also changed weather from data
+const axios = require('axios').default;
 
 
 // singleton ( there can only be one!! )
@@ -30,27 +31,31 @@ app.get('/params', (request, response) => {
   response.send('Thanks for the parameters');
 });
 
-app.get('/', (request, response) => {
+app.get('/weather', (request, response) => {
   //You could also use the .find method to do similar logic
-  let cities = weather.map(element => element.city_name.toLowerCase());
   let cityName = request.query.city;
+  const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${process.env.WEATHER_API_KEY}`;
 
-  if (cityName) {
-    if (cities.includes(cityName)) {
-      let i = cities.indexOf(cityName);
-      let Forecast = [];
-      weather[i].data.map(element => Forecast.push({
-        "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
-        "date": element.datetime
-      }));
-      response.send(Forecast);
-    } else {
-      response.status(404).send('City not found');
+  axios.get(url).then(res => {
+    let cities = res.map(element => element.city_name.toLowerCase());
+
+    if (cityName) {
+      if (cities.includes(cityName)) {
+        let i = cities.indexOf(cityName);
+        let Forecast = [];
+        res[i].data.map(element => Forecast.push({
+          "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.res.description.toLowerCase()}`,
+          "date": element.datetime
+        }));
+        response.send(Forecast);
+      } else {
+        response.status(404).send('City not found');
+      }
     }
-  }
-  else {
-    response.status(400).send('Please give me a city name!');
-  }
+    else {
+      response.status(400).send('Please give me a city name!');
+    }
+  });
 
 });
 
