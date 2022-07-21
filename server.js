@@ -5,8 +5,8 @@ const express = require('express');
 // CORS - cross origin resource sharing
 // origin - the beginning of your url
 const cors = require('cors');
-const weather = require('./data/weather.json'); //was ./data.json also changed weather from data
-//const axios = require('axios').default;
+//const weather = require('./data/weather.json'); //was ./data.json also changed weather from data
+const axios = require('axios').default;
 
 
 // singleton ( there can only be one!! )
@@ -31,59 +31,75 @@ app.get('/params', (request, response) => {
   response.send('Thanks for the parameters');
 });
 
+// app.get('/weather', (request, response) => {
+//   //You could also use the .find method to do similar logic
+//   let cityName = request.query.city;
+
+//   //console.log(response);
+//   let cities = weather.map(element => element.city_name.toLowerCase());
+//   if (cityName) {
+//     if (cities.includes(cityName)) {
+//       let i = cities.indexOf(cityName);
+//       let Forecast = [];
+
+//       weather[i].data.map(element => Forecast.push({
+//         "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
+//         "date": element.datetime
+//       })
+//       );
+//       console.log(Forecast);
+//       response.send(Forecast);
+//     }
+//     else {
+//       response.status(404).send('City not found');
+//     }
+//   }
+//   else {
+//     response.status(400).send('Please give me a city name!');
+//   }
+
+// });
+
 app.get('/weather', (request, response) => {
   //You could also use the .find method to do similar logic
   let cityName = request.query.city;
+  const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${process.env.WEATHER_API_KEY}`;
 
-  console.log(response);
-  let cities = response.map(element => element.city_name.toLowerCase());
-  if (cityName) {
-    if (cities.includes(cityName)) {
-      let i = cities.indexOf(cityName);
+  axios.get(url).then(res => {
+    console.log(res);
+
+    if (cityName === res.data.city_name.toLowerCase()) {
       let Forecast = [];
-      weather[i].data.map(element => Forecast.push({
+      res.data.data.map(element => Forecast.push({
         "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
         "date": element.datetime
       }));
       response.send(Forecast);
     }
-    else {
-      response.status(404).send('City not found');
-    }
-  }
-  else {
-    response.status(400).send('Please give me a city name!');
-  }
-
+  });
 });
 
-// app.get('/weather', (request, response) => {
-//   //You could also use the .find method to do similar logic
-//   let cityName = request.query.city;
-//   const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${process.env.WEATHER_API_KEY}`;
 
-//   axios.get(url).then(res => {
-//     console.log(res);
-//     let cities = res.map(element => element.city_name.toLowerCase());
-//     if (cityName) {
-//       if (cities.includes(cityName)) {
-//         let i = cities.indexOf(cityName);
-//         let Forecast = [];
-//         res[i].data.map(element => Forecast.push({
-//           "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.res.description.toLowerCase()}`,
-//           "date": element.datetime
-//         }));
-//         response.send(Forecast);
-//       } else {
-//         response.status(404).send('City not found');
-//       }
+//   let cities = res.data.map(element => element.city_name.toLowerCase());
+//   if (cityName) {
+//     if (cities.includes(cityName)) {
+//       let i = cities.indexOf(cityName);
+//       let Forecast = [];
+//       res[i].data.map(element => Forecast.push({
+//         "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.res.description.toLowerCase()}`,
+//         "date": element.datetime
+//       }));
+//       response.send(Forecast);
+//     } else {
+//       response.status(404).send('City not found');
 //     }
-//     else {
-//       response.status(400).send('Please give me a city name!');
-//     }
-//   });
+//   }
+//   else {
+//     response.status(400).send('Please give me a city name!');
+//   }
+// })
+//   .catch(e => console.log(e));
 
-// });
 
 // app.get('/pokemon', (request, response) => {
 
@@ -109,7 +125,8 @@ app.get('/error', (request, response) => {
 
 // error handlers take a special 1st parameter, that will be any error thrown from another route handler
 app.use('*', (error, request, response, next) => {
-  response.send(500).send(error);
+  console.log(error);
+  response.status(500).send(error);
 });
 
 // put error handlers down here
