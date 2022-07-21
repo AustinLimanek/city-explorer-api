@@ -37,8 +37,8 @@ app.get('/weather', (request, response) => {
   const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${process.env.WEATHER_API_KEY}`;
 
   axios.get(url).then(res => {
+    console.log(res);
     let cities = res.map(element => element.city_name.toLowerCase());
-
     if (cityName) {
       if (cities.includes(cityName)) {
         let i = cities.indexOf(cityName);
