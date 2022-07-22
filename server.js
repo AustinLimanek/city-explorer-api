@@ -66,7 +66,7 @@ app.get('/movies', (request, response) => {
   const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&query=${cityName}`;
 
   axios.get(url).then(res => {
-    let movies = res.data.data.results;
+    let movies = res.data.results;
 
     if (movies.length) {
       let cityMovies = [];
