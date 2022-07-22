@@ -13,7 +13,7 @@ const axios = require('axios').default;
 const app = express(); // returns an object, with methods designed to handle Requests.
 const PORT = process.env.PORT; //use 3000 -> process.env.PORT
 
-// enable cross origin resource sharing between localhost:3001 and any other url that may make a request.
+// enable cross origin resource sharing between localhost:3000 or heroku server and any other url that may make a request.
 app.use(cors());
 
 //provide the app object, with verbs and paths
@@ -31,37 +31,7 @@ app.get('/params', (request, response) => {
   response.send('Thanks for the parameters');
 });
 
-// app.get('/weather', (request, response) => {
-//   //You could also use the .find method to do similar logic
-//   let cityName = request.query.city;
-
-//   //console.log(response);
-//   let cities = weather.map(element => element.city_name.toLowerCase());
-//   if (cityName) {
-//     if (cities.includes(cityName)) {
-//       let i = cities.indexOf(cityName);
-//       let Forecast = [];
-
-//       weather[i].data.map(element => Forecast.push({
-//         "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
-//         "date": element.datetime
-//       })
-//       );
-//       console.log(Forecast);
-//       response.send(Forecast);
-//     }
-//     else {
-//       response.status(404).send('City not found');
-//     }
-//   }
-//   else {
-//     response.status(400).send('Please give me a city name!');
-//   }
-
-// });
-
 app.get('/weather', (request, response) => {
-  //You could also use the .find method to do similar logic
   let cityName = request.query.city;
   const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${process.env.WEATHER_API_KEY}`;
 
@@ -70,15 +40,61 @@ app.get('/weather', (request, response) => {
 
     if (cityName === res.data.city_name.toLowerCase()) {
       let Forecast = [];
-      res.data.data.map(element => Forecast.push({
-        "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
-        "date": element.datetime
-      }));
+      let high;
+      let low;
+
+      res.data.data.map(element => {
+        low = Math.trunc((element.low_temp)*9/5 + 32);
+        high = Math.trunc((element.high_temp)*9/5 + 32);
+
+        Forecast.push({
+          "description": `Low of ${low}, high of ${high} with ${element.weather.description.toLowerCase()}`,
+          "date": element.datetime
+        });
+      });
+
       response.send(Forecast);
+
     }
-  });
+
+  })
+    .catch(e => console.log(e));
 });
 
+app.get('/movies', (request, response) => {
+  let cityName = request.query.query;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&query=${cityName}`;
+
+  axios.get(url).then(res => {
+    console.log(res);
+    response.send(res.data);
+  })
+    .catch(e => console.log(e));
+});
+
+
+app.get('/error', (request, response) => {
+
+  throw new Error('Server not happy!!');
+
+});
+
+// error handlers take a special 1st parameter, that will be any error thrown from another route handler
+app.use('*', (error, request, response, next) => {
+  console.log(error);
+  response.status(500).send(error);
+});
+
+// put error handlers down here
+app.use('*', (request, response) => {
+  console.log('catch all route hit');
+  response.status(404).send('Route Not found :(');
+});
+
+// opens up the server for requests
+app.listen(PORT, () => {
+  console.log('Server is running on port :: ' + PORT);
+});
 
 //   let cities = res.data.map(element => element.city_name.toLowerCase());
 //   if (cityName) {
@@ -117,25 +133,31 @@ app.get('/weather', (request, response) => {
 
 // });
 
-app.get('/error', (request, response) => {
+// app.get('/weather', (request, response) => {
+//   //You could also use the .find method to do similar logic
+//   let cityName = request.query.city;
 
-  throw new Error('Server not happy!!');
+//   //console.log(response);
+//   let cities = weather.map(element => element.city_name.toLowerCase());
+//   if (cityName) {
+//     if (cities.includes(cityName)) {
+//       let i = cities.indexOf(cityName);
+//       let Forecast = [];
 
-});
+//       weather[i].data.map(element => Forecast.push({
+//         "description": `Low of ${element.low_temp}, high of ${element.max_temp} with ${element.weather.description.toLowerCase()}`,
+//         "date": element.datetime
+//       })
+//       );
+//       console.log(Forecast);
+//       response.send(Forecast);
+//     }
+//     else {
+//       response.status(404).send('City not found');
+//     }
+//   }
+//   else {
+//     response.status(400).send('Please give me a city name!');
+//   }
 
-// error handlers take a special 1st parameter, that will be any error thrown from another route handler
-app.use('*', (error, request, response, next) => {
-  console.log(error);
-  response.status(500).send(error);
-});
-
-// put error handlers down here
-app.use('*', (request, response) => {
-  console.log('catch all route hit');
-  response.status(404).send('Route Not found :(');
-});
-
-// opens up the server for requests
-app.listen(PORT, () => {
-  console.log('Server is running on port :: ' + PORT);
-});
+// });
