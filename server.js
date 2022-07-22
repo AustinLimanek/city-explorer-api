@@ -66,8 +66,29 @@ app.get('/movies', (request, response) => {
   const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&query=${cityName}`;
 
   axios.get(url).then(res => {
-    console.log(res);
-    response.send(res.data);
+    let movies = res.data.data.results;
+
+    if (movies.length) {
+      let cityMovies = [];
+
+      movies.map(element => {
+        cityMovies.push({
+          "title": element.original_title,
+          "overview": element.overview,
+          "average_votes": element.vote_average,
+          "total_votes": element.vote_count,
+          "image_url": "https://image.tmdb.org/t/p/w500" + element.poster_pat,
+          "popularity": element.popularity,
+          "released_on": element.release_date
+        });
+      });
+
+      response.send(cityMovies);
+
+    }
+
+    // console.log(res);
+    // response.send(res.data);
   })
     .catch(e => console.log(e));
 });
